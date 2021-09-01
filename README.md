@@ -695,17 +695,17 @@
 
 <ins>**Device Synchronization Timestamps**</ins>
 
-- Modification time are preserved in all apps ( * = preserved)
+- Modification time are preserved in all apps ( :star: = preserved)
     - Folder modification time updated to reflect new files in folder
 
 
 
 | **Application** | **Modification Time** | **Creation Time** | **Access Time** |
 | :-------------: | :-------------------: | :---------------: | :-------------: |
-| OneDrive | *   | Time of Sync | Time of Sync |
-| OneDrive Business | *   | Time of Sync | Time of Sync |
-| Google Drive | *   | Time of Sync | Time of Sync |
-| Google File Stream | *   | *   | *   |
-| Dropbox | *   | Time of Sync | Time of Sync |
-| Box Drive | *   | Time of Sync | Modification Time |
-| Box Backup & Sync | *   | *   | Time of Sync |
+| OneDrive | :star:   | Time of Sync | Time of Sync |
+| OneDrive Business | :star:   | Time of Sync | Time of Sync |
+| Google Drive | :star:   | Time of Sync | Time of Sync |
+| Google File Stream | :star:   | :star:   | :star:  |
+| Dropbox | :star:  | Time of Sync | Time of Sync |
+| Box Drive | :star:   | Time of Sync | Modification Time |
+| Box Backup & Sync | :star:   | :star:  | Time of Sync |
