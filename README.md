@@ -400,7 +400,7 @@
 
 # Cloud Forensics
 
-**OneDrive**
+<ins>**OneDrive**</ins>
 
 - Local Files
   - _%USERPROFILE%\OneDrive_ (default)
@@ -461,7 +461,7 @@
       - First List: Local files
       - Second List: Cloud only files
 
-**OneDrive Business**
+<ins>**OneDrive Business**</ins>
 
 - Local Files
   - _%USERPROFILE%\One Drive - \&lt;Company name\&gt; (default)_
@@ -484,7 +484,7 @@
   - Must be enabled by admin
   - 90 days retention
 
-**Google Drive**
+<ins>**Google Drive**</ins>
 
 - Google Backup and Sync combines Google Drive and Google Photos Uploader into a single application
 - Local Files
@@ -522,7 +522,7 @@
   - Direction.UPLOAD: activity occuring that updated the local copy of files
   - Direction.DOWNLOAD: change made via the local filesystem that must be sycnhronized
 
-**Google Workspace File Stream**
+<ins>**Google Workspace File Stream**</ins>
 
 - Provides features of Backup and Sync, with addition of &quot;files on demand&quot;
 - Local Files
