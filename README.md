@@ -772,3 +772,14 @@
 - Prefetch
 - Recycle Bin
 - Memory Analysis (cached files)
+
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Application** | **Metadata**<br>**(Local)** | **Metadata**<br>**(Cloud)** | **File Hashes** | **Deleted Items (db)** | **Cached Files** | **Usage Logs** | **Virtual File System** |
+| :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: |
+| OneDrive | ⭐   | ⭐   |     |     |     |     |     |
+| OneDrive Business | ⭐   | ⭐   |     |     |     | ⭐   |     |
+| Google Drive | ⭐   | ⭐   | ⭐   |     |     | ⭐   |     |
+| Google File Stream | ⭐   | ⭐   |     | ⭐   | ⭐   | ⭐   | ⭐   |
+| Dropbox | ⭐   | ⭐   |     | ⭐   |     | ⭐   |     |
+| Box Drive | ⭐   | ⭐   | ⭐   |     | ⭐   | ⭐   | ⭐   |
+| Box Backup & Sync | ⭐   |     | ⭐   | ⭐   |     | ⭐   |     |
