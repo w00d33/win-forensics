@@ -776,6 +776,30 @@
 
 <ins>**Cloud Storage Forensic Summary**</ins>
 
+Metadata (Local)
+
+- Local files present and associated metadata
+
+Metadata (Cloud)
+
+- Files present in a user's cloud storage that are not currently synchronized to the local system
+
+File Hashes
+
+Deleted Items (db)
+
+- Deleted items referenced within locally stored databases
+
+Cached Files
+
+- Can include cloud-only or deleted items not regularly present on the filesystem
+
+Usage Logs
+
+Virtual Filesystem
+
+- Ensure the contents of the local storage folders are captured (requires credentials or live, logged-in system)
+
 | **Application** | **Metadata**<br>**(Local)** | **Metadata**<br>**(Cloud)** | **File Hashes** | **Deleted Items (db)** | **Cached Files** | **Usage Logs** | **Virtual File System** |
 | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: | :---------------: |
 | OneDrive | ⭐   | ⭐   |     |     |     |     |     |
