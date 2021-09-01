@@ -398,6 +398,8 @@
             
 - Tools: Superfetchlist.exe
 
+# Cloud Forensics
+
 **OneDrive**
 
 - Local Files
@@ -569,7 +571,7 @@
   - CSV export via API
   - Alerts can be set up on any combination of files
 
-**Dropbox**
+<ins>**Dropbox**</ins>
 
 - Local Files
   - _%USERPROFILE%\DropBox (default)_
@@ -621,7 +623,7 @@
 
 
 
-**Box**
+<ins>**Box**</ins>
 
 - Local Files
   - _%USERPROFILE%\Box (default) - reparse point pointing to virtual system_
@@ -659,7 +661,7 @@
     - _inodeID: Identifier used as foreign key in fsnodes table_
     - _Age: Time file was cached; a &quot;0&quot; value means not yet cached (unix epoch time)_
 
-**Box Backup and Sync Application**
+<ins>**Box Backup and Sync Application**</ins>
 
 - Local Files
   - %USERPROFILE%\Box Sync (default - NOT a virtual folder like Box Drive)
