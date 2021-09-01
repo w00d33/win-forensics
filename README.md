@@ -692,3 +692,19 @@
     - Box\_scanned\_item table
       - Sequence\_id: identifies how many saved version updates Box has saved for each file (0=original version)
       - Is\_deleted: The field is present, but does not appear to be used in this database
+
+<ins>**Device Synchronization Timestamps**</ins>
+
+- Modification time are preserved in all apps (* = preserved)
+    - Folder modification time updated to reflect new files in folder
+
+|     |     |     |     |
+| --- | --- | --- | --- |
+| **Application** | **Modification Time** | **Creation Time** | **Access Time** |
+| OneDrive | *   | Time of Sync | Time of Sync |
+| OneDrive Business | *   | Time of Sync | Time of Sync |
+| Google Drive | *   | Time of Sync | Time of Sync |
+| Google File Stream | *   | *   | *   |
+| Dropbox | *   | Time of Sync | Time of Sync |
+| Box Drive | *   | Time of Sync | Modification Time |
+| Box Backup & Sync | *   | *   | Time of Sync |
