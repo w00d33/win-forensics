@@ -709,3 +709,66 @@
 | Dropbox | :star:  | Time of Sync | Time of Sync |
 | Box Drive | :star:   | Time of Sync | Modification Time |
 | Box Backup & Sync | :star:   | :star:  | Time of Sync |
+
+<ins>**Forensic Challenges**</ins>
+
+- Many cloud drive apps are implemented as &quot;on-demand&quot;
+  - Offline copies of files may not be present or difficult to access
+  - Access to drive folder is only possible on live, logged on system
+  - Raw contents in the cloud may be encrypted
+- Case Study: Box Drive
+  - Box folder is an NTFS reparse point to a virtual filesystem
+  - A forensic image of the C drive only captures the reparse tag
+- Solution(s)
+  - Logical imaging of drive folders (requires user to be logged in)
+  - Collect data using cloud API (requires user credentials)
+
+<ins>**Kape Targets for Cloud Storage**</ins>
+
+- Kape can collect cloud metadata and files (including &quot;on-demand&quot;)
+- Targets
+  - CloudStorage.tkape (OneDrive, Google Drive, Dropbox, Box)
+
+<ins>**Cloud Storage API collection**</ins>
+
+- Google Takeout/Workspace Export
+  - [https://takeout.google.com](https://takeout.google.com/)
+- F-Response
+  - OneDrive
+  - G Drive
+  - Workspace
+  - Dropbox
+  - Box
+- Magnet Axiom
+  - OneDrive
+  - G Drive
+  - Workspace
+  - Dropbox
+  - Box
+  - iCloud
+
+<ins>**Cloud Storage Identification via Browser Artifacts**</ins>
+
+- URL Parameters
+- Page Title
+- Can Provide
+  - File Sharing
+  - Access to Deleted items
+  - File version history
+  - Files and folder accessed
+  - Searches conducted by the user
+
+<ins>**Cloud Storage Identification via OS Artifacts**</ins>
+
+- Shadow Copies
+- Lnk files and Jumplists
+- Registry &quot;files opened&quot;
+  - RecentDocs
+  - Office FileMRU
+  - OpenSavePidlMRU
+- Shellbags
+- Directory Indexes
+- IE file history
+- Prefetch
+- Recycle Bin
+- Memory Analysis (cached files)
