@@ -695,11 +695,11 @@
 
 <ins>**Device Synchronization Timestamps**</ins>
 
-- Modification time are preserved in all apps (* = preserved)
+- Modification time are preserved in all apps ( * = preserved)
     - Folder modification time updated to reflect new files in folder
 
-|     |     |     |     |
-| --- | --- | --- | --- |
+
+| :-: | :-: | :-: | :-: |
 | **Application** | **Modification Time** | **Creation Time** | **Access Time** |
 | OneDrive | *   | Time of Sync | Time of Sync |
 | OneDrive Business | *   | Time of Sync | Time of Sync |
