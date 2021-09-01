@@ -699,8 +699,9 @@
     - Folder modification time updated to reflect new files in folder
 
 
-| :-: | :-: | :-: | :-: |
+
 | **Application** | **Modification Time** | **Creation Time** | **Access Time** |
+| :-------------: | :-------------------: | :---------------: | :-------------: |
 | OneDrive | *   | Time of Sync | Time of Sync |
 | OneDrive Business | *   | Time of Sync | Time of Sync |
 | Google Drive | *   | Time of Sync | Time of Sync |
