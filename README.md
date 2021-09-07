@@ -798,3 +798,187 @@
 | Dropbox | ⭐   | ⭐   |     | ⭐   |     | ⭐   |     |
 | Box Drive | ⭐   | ⭐   | ⭐   |     | ⭐   | ⭐   | ⭐   |
 | Box Backup & Sync | ⭐   |     | ⭐   | ⭐   |     | ⭐   |     |
+
+# Shell Items
+
+
+<ins>**Shell Items Overview**</ins>
+
+- Data or a file that has information to access another file is known as a Shell Item
+- Shell Item Artifact Attributes
+  - Type of Drive Target is On
+    - Fixed, Removable, Network
+  - Path of Target File
+    - Drive Letter, Volume Label, Volume Serial for Locally Attached
+    - Server Share Path or Drive Letter (optional) for network
+    - If the target is in a "special" or "known" folder
+  - Target Metadata
+    - MAC Timestamps
+    - Size
+    - MFT Record
+    - Sequence Number
+
+
+<ins>**Shell Item Structure**</ins>
+
+- *Header*
+  - CLSID (sig.)
+  - Attributes
+  - Timestamps
+  - Size
+  - What other sections of the LNK file exist
+- *PIDL*
+  - After *Header*
+  - Contains a shell path to the target file
+- *LinkInfo* Section
+  - After *PIDL*
+  - Describes the path
+  - Drive Type
+  - Serial #
+  - Volume Label
+  - Path
+- *StringData*
+  - After *Link Info*
+  - Contains up to 5 strings
+  - Name
+  - Relative Path
+  - Working Dir
+  - Command Line Arguments
+  - Icon Locations
+- *CNRL*
+  - Inside *LinkInfo*
+  - Share Path
+  - Device Name/Letter
+- *ExtraData*
+  - After *StringData*
+  - *Property Store* data block
+    - Contains arbitrary information, and the *TrackerInformation* data block which can be used to track files across multiple Windows systems
+
+
+<ins>**Shortcut Files (.lnk)**</ins>
+
+- Automatically created by Windows in Recent Folder
+- Win7 - Win10
+  - *C:\Users\<user>\AppData\Roaming\Microsoft\Windows\Recent*
+- Any non-executable opened in Windows generates TWO LNK files
+  - 1: Target File
+  - 2: Parent folder of target file
+  - Max = 149 file and folder LNK files in the *Recent* directory
+- Shortcut (.lnk) files will point to:
+  - Target file MAC times
+  - Volume information (Name, Type, Vol. Serial Number)
+  - Fixed, removable, or network target
+  - Original path and location
+- Time of First/Last Open
+  - First Opened
+    - Creation Date of shortcut file
+  - Last Opened
+    - Modification date of shortcut file
+- File Changes in Win 10
+  - File Creation
+    - LNK file of Folder and File
+  - Folder Creation
+    - LNK file of
+      - Folder
+      - Parent Folder
+      - Grandparent Folder
+  - LNK File Types
+    - 20 per extension
+    - 30 for folder references
+    - 149 in total
+- LECMD.exe
+  - LNK Explorer Command Line edition
+    - Source timestamps - From LNK file
+    - Target timestamps - From where the file is located
+    - Flags in the header determine what other structures are available in the lnk file
+- URL LNK Files
+  - Evidence of accessing website from:
+    - Run Dialog
+    - Windows Search
+    - Link in an Application (Slack, Skype, OneNote)
+
+
+<ins>**Jumplists**</ins>
+
+- Provides another location to verify the opening and/or creation of non-executable files
+- Records file access for a specific application
+- Can help discern that a wiped/deleted file at one point existed inside the filesystem
+- Includes full path
+- Destinations (nouns)
+  - Pinned Category
+  - Known Categories
+  - Custom Categories
+- Tasks (verbs) 
+  - User Tasks
+  - Taskbar Tasks
+- Types
+  - Automatic - created for each app by Windows
+  - Custom - created with specific development information for the app developer
+- Automatic Destinations
+  - *C:\Users\<USER>\AppData\Roaming\Microsoft\Windows\Recent\AutomaticDestinations*
+  - Sorted by AppID
+  - Creation Time = First time item added to the AppID files. First time of execution of application, with the file open
+  - Modification Time = Last time item added to the AppID file. Last time of execution of application, with file open
+- Custom Destinations
+  - *C:\Users\<USER>\AppData\Roaming\Microsoft\Windows\Recent\CustomDestinations*
+  - Creation Time = First time item added to the AppID files. Typically corresponds to the first time of execution of application
+  - Modification Time = Last time item added to the AppID file.
+  - Must be carved for LNK files or manually extracted using a hex editor (difficult)
+- AppIDs
+  - <https://forensicswiki.xyz/wiki/index.php?title=List_of_Jump_List_IDs>
+  - Many Automatic Destinations match a Custom Destination AppID
+- Structured Storage Viewer
+  - Left Column = Streams
+    - Separate LNK file
+    - Numerically ordered from the earliest one (usually 1) to the most recent
+  - Right Click the stream for options to save data
+- JLECmd.exe
+  - Decodes information contained in custom and automatic destination jumplists
+  - --dumpTo allows for the exporting of LNK files to a directory
+  - Best practice use "--csv" and -q options
+  - LastModified - Time entry added
+  - EntryNumber - List of Entries
+  - LastUsedEntry - Last added
+
+
+<ins>**Shellbags**</ins>
+
+- Contains user-specific Windows OS folder and viewing preferences to Windows Explorer
+- Location
+  - Explorer Access
+    - USRCLASS.DAT\Local Settings\Software\Microsoft\Windows\Shell\Bags
+    - USRCLASS.DAT\Local Settings\Software\Microsoft\Windows\Shell\BagMRU
+    - USRCLASS.DAT\Local Settings\Software\Microsoft\Windows\ShellNoRoam\BagMRU
+    - USRCLASS.DAT\Local Settings\Software\Microsoft\Windows\ShellNoRoam\Bags
+  - Desktop Access
+    - NTUSER.DAT\Software\Microsoft\Windows\Shell\BagMRU
+    - NTUSER.DAT\Software\Microsoft\Windows\Shell\Bags
+    - NTUSER.DAT\Software\Microsoft\Windows\ShelNoRoam\Bags
+    - NTUSER.DAT\Software\Microsoft\Windows\ShellNoRoam\BagMRU
+
+- Investigative Notes
+  - Show which folders were accessed on the local machine, network, and/or removeable devices
+  - Evidence of previously existing folders after deletion/overwrite
+  - When certain folder were interacted with
+- BagMRU
+  - 0 = My Computer
+    - Subkeys = Drives
+  - 1 = Drive
+    - Subkey = Folders
+- Contain MAC times of folders
+- Ref: <https://www.sciencedirect.com/science/article/pii/S1742287609000413>
+- MRUListEx Indicator
+  - Directory was interacted with at that time (Last Key WriteTime)
+  - All other timestamps within a tree are reset to that timestamp
+- Differentiate Drives
+  - File record number (inode number) and sequence number allow you to separate drives
+  - FAT32 = Sequence number null
+  - NTFS = Sequence number exists
+  - Match a returned device to directories accessed to make sure you are looking at the right device
+- ShellBagsExplorer.exe
+  - Absolute Path - Folder Name
+  - ShellType
+  - NTFS MFT Entry
+  - NTFS Sequence Number - If null the its not NTFS
+  - FirstExplored - Folder First Interacted Time
+  - Last Explored - Folder Last Interacted Time (MRUListEx)
