@@ -982,3 +982,451 @@
   - NTFS Sequence Number - If null the its not NTFS
   - FirstExplored - Folder First Interacted Time
   - Last Explored - Folder Last Interacted Time (MRUListEx)
+
+#USB Analysis
+
+**USB Overview**
+
+- Removable Device Information
+  - Vendor/Make/Version
+  - Unique Serial Number
+- User Information and Activity with USB Device
+  - Determine Drive Letter Device and Volume Name
+  - Find User That Used the Specific USB Device
+  - Discover First Time Device Connected
+  - Determine Last Time Device Connected
+  - Determine Time Device Removed
+- Device Types Mounts as Hard Disk Drive
+
+  - Physical access to the underlying filesystem
+  - Ex: External Drives, Thumb/Flash Drives, and MP3 Players
+
+  - Picture Transfer Protocol (PTP)
+    - No access to the underlying filesystem
+    - Copy media from, not to a connected device
+    - Only images and video files
+    - XP - Mounts as Windows Image Acquisition (WIA)
+    - Win7-10 - Mounts as Portable Devices
+  - Media Transfer Protocol (MTP)
+    - No access to the underlying filesystem
+    - Access to internal SD card
+    - Copy files to/from connected device
+    - Any file type
+    - Win7 - Mounts as portable devices
+    - Ex: MP3, cameras, smartphones, tablets
+
+**Evidence of File Opening**
+
+- MSC Devices
+  - Created LNK files for all the files that were opened
+    - Windows Recent Folder
+    - Microsoft Office Recent Folder
+    - Jumplist Automatic Destinations
+- MTP Devices
+  - May or may not create LNK files (depends : app | filetype)
+  - Some MTP LNK files do not point back to the MTP source device but instead to the WPDNSE folder on Win7/8 only
+    - C:\Users\\&lt;user\&gt;\AppData\Local\Temp\WPDNSE\{GUID}
+    - Maintains a copy of the file that was opened from the device
+    - Folder does not survive reboot
+- Discover Volume Name
+  - Discover the Volume Name of the device when it was plugged into the machine
+  - _SOFTWARE\Microsoft\Windows Portable Devices\Devices_
+  - Identify the USB device that was last mapped to a specific Volume Name using USB unique Serial Number of the USB device (Win 7 only)
+  - Find Serial Number via USBSTOR
+  - Volume Name can be mapped to drive letter via examination of LNK files
+  - Key is not cleaned as part of the Plug and Play Cleanup scheduled task and retains more historical removeable device information
+  - Has 30 day limit
+
+**USB MSC Device Forensic Process**
+
+1. Determine Vendor, Product, Version, Serial Number
+
+  1. _SYSTEM\CurrentControlSet\Enum\USBSTOR_
+
+    1. **Vendor =**
+    2. **Product =**
+    3. **Version =**
+    4. **USB Unique Serial Number =**
+
+1. Determine Vendor-ID (VID) and Product-ID (PID)
+
+  1. _SYSTEM\CurrentControlSet\Enum\USB -\&gt; Perform search for USB S/N_
+
+    1. **VID\_XXXX = (Vendor ID)**
+    2. **PID\_YYYY = (Product ID)**
+
+    1. Ref: [http://www.linux-usb.org/usb.ids](http://www.linux-usb.org/usb.ids)
+
+1. Determine Last Device Drive Letter and Volume GUID
+
+  1. _SYSTEM\MountedDevices_ - \&gt; Search for Serial in Values
+
+    1. **Drive Letter =**
+    2. **Volume GUID = (note without the brackets)**
+  1. Small amounts of data = Hard Drives
+
+1. Determine Volume Name
+
+  1. SOFTWARE\Microsoft\Windows Portable Devices\Devices - \&gt; Perform Search for USB Serial Number and Match with Volume Name
+
+    1. **Volume Name =**
+
+1. Find User That Used the Specific USB Device
+
+  1. _NTUSER.DAT\Software\Microsoft\Windows\CurrentVersion\Explorer\MountPoints2_ -\&gt; Search for Volume GUID
+
+    1. **User =**
+
+1. Also tracks mapped shares (often seen intrusions)
+
+  1. Compromised accounts
+  2. Lateral Movement
+
+1. Determine First time Device Connected
+
+  1. _C:\Windows\inf\setupapi.dev.lo_g -\&gt; Perform search for USB Unique Serial Number
+
+    1. **Time/TimeZone =**
+
+1. _SYSTEM\CurrentControlSet\Enum\USBSTOR\\&lt;Ven\_Prod\_Version\&gt;\\&lt;USB iSerial #\&gt;\Properties\ {83da6326-97ab-4088-9453-a1923f57b29}\0064_ -\&gt; Value = Windows 64-Bit Hex Value timestamp - Use Dcode Date
+
+  1. **First Time Device Connected =**
+
+1. Determine Last Time Device Connected
+
+  1. _SYSTEM\CurrentControlSet\Enum\USBSTOR\Ven\_Prod\_Version\USB iSerial #\Properties\ {83da6326-97ab-4088-9453-a1923f57b29}\0066_-\&gt; Value = Windows 64-Bit Hex Value timestamp - Use Dcode Date
+
+    1. **Last Time Device Connected =**
+
+1. Determine Time Device Removed
+
+  1. SYSTEM\CurrentControlSet\Enum\USBSTOR\Ven\_Prod\_Version\USB iSerial #\Properties\ {83da6326-97ab-4088-9453-a1923f57b29}\0067 -\&gt; Value = Windows 64-Bit Hex Value timestamp - Use Dcode Date
+
+    1. **Time Device Removed =**
+
+**Removable Devices Event Logs**
+
+- Scenario
+  - Determine what hardware devices have been installed on the system
+- Relevant Event Ids
+  - 20001 - Plug and Play driver install attempted (System log)
+  - 4663 - Attempt to access removable storage object (Security log)
+  - 4656 - Failure to access removable storage object (Security log)
+  - 6416 - A new external device was recognized on system (Security log)
+- Investigative Notes
+  - System log identifies device type and Serial Number but shows only first time a device has been plugged in
+  - Security log can identify every time a device is accessed and what files and folders were accessed
+
+**Tracking Removable Devices in System Log**
+
+- Event ID 20001
+- Timestamp: The time and date that the device driver installation was attempted
+- Device Information: Embedded device information captured by the Plug and Play manager
+- Device Serial Number
+- Status: error code associated with the device installation (0x00 = no errors)
+- Microsoft-Windows-DriverFramworks-UserMode/Operational
+  - Provides similar logs
+  - Require enablement
+
+**Audit Removable Storage**
+
+- Logs every interaction with a removeable device by user
+- Includes folder, filenames, and application used
+- Successful and failed attempts
+  - 4663/4656
+- Does not provide hardware details (only volume number)
+
+**Audit Plug and Play Activity**
+
+- Logs every time Plug and Play detects a device
+  - Only successful events
+
+
+#Email Forensics
+
+**Email Forensics Overview**
+
+- Who sent the email
+  - Email address
+  - IP address
+  - Contextual clues
+- When was it sent
+  - Header date and time
+  - Mail server timestamps
+- Where was it sent from
+  - IP address/ISP
+  - Geolocation
+  - Mail server domain
+  - Message-ID
+- Is there relevant content
+  - Message body
+  - Attachments
+  - Address book
+  - Calendar entries
+
+**Email Headers**
+
+- Received From
+  - Bottom-most entry (the originating mail server)
+  - Each Mail Transfer Agent (MTA) adds a received entry
+  - Entries include
+    - Server IP
+    - Server Name
+    - Date/Time/Time Zone
+- Message ID
+  - Provided by the originating mail server
+  - Unique identifier appended to the server name with an &quot;@&quot; symbol
+  - Tracking number for the message
+- X-Mailer
+  - Identifies the email client used to create the email message
+
+- X-Originating-IP
+  - Identifies the IP address of the computer used to send the original message
+  - Can be forged (requires control on the originating MTA)
+  - If not present, it may still be recorded in the &quot;Received&quot; field
+  - Also X-IP
+  - X-Forwarded-For
+    - Indicates the email was forwarded from another source (sometimes included originating IP)
+
+**Email Authenticity**
+
+- Sender Policy Framework (SPF)
+  - Validates the sending IP address to the originating domain
+- DomainKeys Identified Mail (DKIM)
+  - Verifies the message content has not changed via digital signature
+- Domain-based Message Authentication (DMARC)
+  - Allows senders to set a policy of what should be don&#39;t if SPF and DKIM checks fail can authenticate the &quot;header from&quot; address with SPF/DKIM information
+
+**Messaged-ID Threading**
+
+- References
+  - Simple list of message-IDs for each proceeding messages in the thread
+  - Can be used to reconstruct threads
+
+**Extended MAPI Headers**
+
+- Microsoft messaging architecture
+  - Core component of Exchange and Outlook
+  - Significantly increases email header properties
+  - Additional timestamps
+    - Mapi-Client-Submit-Time (time on local system when the email was submitted by the email client)
+    - Pr\_Creation\_Time (creation of the email)
+    - Pr\_Last\_Modification\_Time (compare with creation time, can show the message was manipulated)
+    - Mapi-Conversation-Index (times of other messages in thread)
+  - Additional Unique Identifiers
+    - Mapi-EntryID
+  - Information on actions taken on message
+    - Mapi-Message-Flags (When an email is saved or send, identify when messages are opened from multiple .PST files)
+    - Pr\_Last\_Verb\_Executed (read, replied, forwarded, etc.)
+    - Pr\_Last\_Verb\_Executed\_Time
+  - Tools
+    - Outlook Spy
+    - Outlook Redemption
+    - MetaDiver
+
+**Host Based Mail Overview**
+
+- Identify all email storage locations
+  - Find via filetype searches
+  - Review email client configuration info
+  - Search for index and message files
+- Potential for password protection
+- Search for deleted email archives
+- Outlook
+  - Extension: .PST
+  - Archived stored by default in:
+    - %USERPROFILE%\Documents\Outlook
+  - Registry key tells what archives are being used:
+    - HKCU\Software\Microsoft\Windows NT\CurrentVersion\Windows Messaging Subsystem\Profiles\Outlook
+  - Encryption/obfuscation enabled by default
+  - Archive size can be set up to 50 GB
+  - Typically used for backups or email archives today
+- Offline Outlook Data File (.OST)
+  - Dominant format for Microsoft email
+    - &quot;Cached Exchange Mode&quot;
+    - M365, Exchange, Outlook.com, IMAP
+  - Stored on local system as .OST file
+    - %AppData%\Local\Microsoft\Outlook
+  - Mailbox is synchronized with server
+    - Last 12 months of email by default
+    - Deduplication is often necessary
+    - Maximum 50 GB by default
+  - Orphan .OST files can be found
+
+**Outlook Attachment Recovery**
+
+- Outook uses a &quot;Secure Temp Folder&quot; to open attachments
+  - _%AppData%\Local\Microsoft\Windows\Temporary Internet Files\Content.Outlook_
+  - _%AppData%\Local\Microsoft\Windows\INetCache\Content.Outlook_ (IE11+)
+- Preview and opened attachments can be recovered
+  - Prior to outlook 2007, attachments persisted until Disk Cleanup
+  - In Outlook 2007+, attachments remain only if message or Outlook is closed before the attachment or in the event of an application crash
+  - Outlook back dates creation time of attachment to message time
+  - Location
+    - HKCU\Software\Microsoft\Office\\&lt;version\&gt;\Outlook\Security\OutlookSecureTempFolder
+  - Use MFT $Filename attribute to determine the time the attachment was opened
+  - Find contents of folder in $Logfile, USNJournal, and in copies of the $MFT in Volume Shadow Copies
+
+**Other Host-Based Formats**
+
+- Identify installed applications
+  - Windows registry is helpful
+- Perform keyword searches
+  - .txt
+  - .htm
+  - .eml
+  - .msg
+- Archives may be corrupted
+- Tool: Magnet Axiom
+
+**Calendar and Contacts**
+
+- Appointments
+  - .ICS, .SDB, .PST
+- Address Books
+  - .WAB, .VCF, .PAB, .MAB, .NNT
+- Task Lists
+  - .SDB, .PST
+
+**Email Encryption**
+
+- S/MIME, PGP/MIME, O365 Msg Encryption
+- Look for .pgp or .p7m
+- Enterprise Clients typically have the most robust mail archive encryption
+  - Key servers makes recovery feasible
+- Network-based encryption usually does not hamper forensic efforts
+- Encryption is rare
+
+**Microsoft Exchange**
+
+- Exchange 2007+ uses .EDB format
+  - Extensible Storage Engine (ESE) format
+- .EDB files store mail, attachments, contacts, journal, notes, tasks, calendar, and address book entries
+- .log files contain messages not yet written to .EDB
+- Exchange is often broken up into multiple storage groups, each with multiple .EDB databases
+- Mailboxes can be exported in .PST file format
+
+**Recoverable Items**
+
+- Deletions
+  - Items removed from user&#39;s Deleted Items folder; Deleted mail from POP or IMAP accounts
+- Purges
+  - Temp location for hard-deleted items from Deletions folder and items that exceed retention period. Messages remain during litigation hold.
+- Litigation Hold
+  - Deleted Items from mailboxes places on hold
+- Versions
+  - Copy on write changes to items in active mailboxes placed on hold
+- Audits
+  - Audit log entries for mailboxes with auditing enabled
+- Calendar Logging
+  - Calendar changes when calendar logging is enabled
+- Message Tracing
+  - Log showing message details of sent and received mail
+- By default, email retained for 14 days and mailboxes for 30 days
+- Exchange 2010+ includes indexing and retention of all deleted objects
+
+**Email Server Collection**
+
+1. Full or Logical Disk Image of Server
+2. Export of individual mailboxes in their entirety
+3. Use of specialized applications to search, filter, and extract messages from the email store
+
+**Online Acquisition - Windows Server Backup**
+
+- WSBExchange.exe
+  - Allows backups to be &quot;Exchange Aware&quot;
+  - Employs the Volume Shadow Service
+  - Written to Virtual Hard Disk (VHD) files
+
+**Exporting Email In Exchange**
+
+- Powershell is now the easiest way to export email
+  - _New-MailboxExportRequest -Mailbox buckybarnes -FilePath_ [_\\Server\Folder\barnes.pst_](/%5C%5CServer%5CFolder%5Cbarnes.pst)
+- Output can be filtered by nearly every email component
+  - _New-MailboxExportRequest -Mailbox buckybarnes -ContentFilter { (body -like &quot;\*HYDRA\*&quot;) -and (received -lt &quot;03/02/2012&quot;) } -Filepath_ [_\\Server\Folder\Barnes\_Filtered.pst_](/%5C%5CServer%5CFolder%5CBarnes_Filtered.pst)
+- Automatically includes recoverable items
+
+**Compliance Search**
+
+- Powershell cmdlet -\&gt; New-Compliance Search
+  - Security and Compliance GUI in Microsoft 365
+- Select mailboxes and build Boolean filters
+- Integrates with In-Place eDiscovery
+  - Key word statistics help fine-tune searches (# items/size)
+  - Can easily export to .PST and place items on &quot;hold&quot;
+- _New-Compliance Search -name &quot;Legal Case 81280&quot; -ExchangeLocation &#39;Sales&quot; -ContentMatchQuery &quot;&#39;Widget&#39; and &#39;Johnson&#39;&quot;_
+- Security and Compliance
+  - Content Search
+    - Export .PST
+
+Unified Audit Logs in Microsoft 365
+
+- Search and Export Logs
+  - Exchange Online
+  - SharePoint Online
+  - OneDrive for Business
+  - Azure Active Directory
+- Must be enabled by Admin
+  - _Set-AdminAuditLogConfig_
+  - Auto-enabled for every user
+  - 90 days retention
+- Things to Note
+  - Verify default logging is &quot;on&quot;
+  - No logoff events
+  - IP address and client included
+
+**Office 365 Extractor Script**
+
+- Ref: [https://github.com/PwC-IR/Office-365-Extractor](https://github.com/PwC-IR/Office-365-Extractor)
+
+**Business Email Compromise**
+
+- Compromised Accounts
+  - Azure Management Reports
+  - M365 Unified Audit Logs
+  - Security and Compliance
+- Privilege Escalation
+  - M365 Admin Portal
+  - Admin Audit Logs
+  - M365 Unified Audit Logs
+  - Security and Compliance
+- Data Exfiltration
+  - M365 Unified Audit Logs
+  - DumpDelegatesandForwardingRules.ps1
+  - Cloud App Security
+
+**ISP Legal/Law Enforcement Guides**
+
+- Archived Yahoo! Compliance Guide: [https://cryptome.org/isp-spy/yahoo-spy.pdf](https://cryptome.org/isp-spy/yahoo-spy.pdf)
+- Cryptome ISP Spy Guides: [https://cryptome.org/isp-spy/](https://cryptome.org/isp-spy/)
+- Facebook Information for Law Enforcement Agencies: [https://www.facebook.com/safety/groups/law/guidelines/](https://www.facebook.com/safety/groups/law/guidelines/)
+- Google Transparency Report Help Center: [https://support.google.com/transparencyreport/answer/9713961?hl=en&amp;visit\_id=637669961052831477-1790394080&amp;rd=1](https://support.google.com/transparencyreport/answer/9713961?hl=en&amp;visit_id=637669961052831477-1790394080&amp;rd=1)
+
+**Webmail Browser Artifacts**
+
+- Webmail usage recorded via URLs, Page Titles, and Referrers
+  - Accounts
+  - Subject Lines
+  - Folders
+  - Composition
+  - Searches
+
+**Yahoo Browser Remnants**
+
+- File in XML format
+- Encoded with ROT13
+
+**Hotmail Browser Remnants**
+
+- Gzip files
+
+**Forensic Process**
+
+1. Review installed applications
+2. Locate and acquire local email archives
+3. Identify and export server-based mailboxes
+4. Search for evidence of cloud-based email
+
+  1. Acquire from cloud and/or data carve locally
+1. Process and review email using eDiscovery or forensic tools
+2. Export relevant files from archive
