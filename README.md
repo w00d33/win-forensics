@@ -983,7 +983,7 @@
   - FirstExplored - Folder First Interacted Time
   - Last Explored - Folder Last Interacted Time (MRUListEx)
 
-#USB Analysis
+# USB Analysis
 
 **USB Overview**
 
@@ -1142,7 +1142,7 @@
   - Only successful events
 
 
-#Email Forensics
+# Email Forensics
 
 **Email Forensics Overview**
 
