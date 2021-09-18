@@ -1431,7 +1431,7 @@ Unified Audit Logs in Microsoft 365
 1. Process and review email using eDiscovery or forensic tools
 2. Export relevant files from archive
 
-**Windows Search Database**
+# Windows Search Database
 
 - _C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Windows.edb_
 - Collects info on:
@@ -1450,7 +1450,7 @@ Unified Audit Logs in Microsoft 365
       - _Esentutl /p Windows.edb_
   - ESECarve (recover data purged from database)
 
-**Thumbnail Forensics**
+# Thumbnail Forensics
 
 - Thumbs.db
   - Hidden file in directory where images on machine exist stored in a smaller thumbnail graphics
@@ -1476,7 +1476,7 @@ Unified Audit Logs in Microsoft 365
   - Open the command prompt and cd to exported folder \Cases\Windows
   - Run the command &quot;esentutil /r edb /d&quot;
 
-**Recycle Bin Forensics**
+# Recycle Bin Forensics
 
 - Subfolder is created with user&#39;s SID
 - Filename in both ASCII and UNICODE
@@ -1490,9 +1490,7 @@ Unified Audit Logs in Microsoft 365
 - Tool
   - RBCmd.exe
 
-
-
-**Windows 10 Timeline Forensics**
+# Windows 10 Timeline
 
 - _ActivitiesCache.db_
   - SQLite Database Containing 30+ Days of User Activity
@@ -1574,7 +1572,7 @@ Unified Audit Logs in Microsoft 365
 - Tool
   - WxTCmd.exe
 
-**System Resource Usage Monitor (SRUM)**
+# System Resource Usage Monitor (SRUM)
 
 - Processes Run
   - AppID and Path
@@ -1612,6 +1610,8 @@ Unified Audit Logs in Microsoft 365
       - Channel Hints
 - Tool
   - SRUM\_DUMP
+
+# Event Logs
 
 **Event Log Overview**
 
