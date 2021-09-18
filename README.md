@@ -1430,3 +1430,418 @@ Unified Audit Logs in Microsoft 365
   1. Acquire from cloud and/or data carve locally
 1. Process and review email using eDiscovery or forensic tools
 2. Export relevant files from archive
+
+**Windows Search Database**
+
+- _C:\ProgramData\Microsoft\Search\Data\Applications\Windows\Windows.edb_
+- Collects info on:
+  - Files
+  - Emails
+  - Content-Related Items
+- Tool:
+  - ESE Database View (View Windows.edb)
+  - Esentutl (Repair corrupted databases)
+    - Ref: [https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh875546(v=ws.11)](https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh875546(v=ws.11))
+    - Repair Headers
+      - _Esentutl /mh Windows.edb_
+    - Recover dirty db
+      - _Esentutl /r edb /d_
+    - Repair dirty db
+      - _Esentutl /p Windows.edb_
+  - ESECarve (recover data purged from database)
+
+**Thumbnail Forensics**
+
+- Thumbs.db
+  - Hidden file in directory where images on machine exist stored in a smaller thumbnail graphics
+  - Thumbs.db catalogs pictures in a folder and stores a copy of the thumbnail even if pictures were deleted
+  - Win 7/8/10
+    - Automatically created anywhere accessed via a UNC path (Local or remote)
+- Thumbs.db includes
+  - Thumbnail picture of original picture/document thumbnail - even if deleted
+  - Last modification time (XP only)
+  - Original filename (XP only)
+- Tool
+  - Thumbs Viewer
+- Thumbcache
+  - C:\Users\\&lt;User\&gt;\AppData\Local\Microsoft\Windows\Explorer\
+    - Thumbnails only
+    - Original Location &quot;might&quot; be stored
+    - Stored when user switches a folder to thumbnail mode or view pictures via a slideshow
+  - Thumbcache\_##.db
+  - Tool
+    - Thumbcache Viewer
+- Mapping Filenames to Thumbcache
+  - Copy _C:\ProgramData\Microsoft\Search\Data\Applications\Windows\_ to an export folder named cases
+  - Open the command prompt and cd to exported folder \Cases\Windows
+  - Run the command &quot;esentutil /r edb /d&quot;
+
+**Recycle Bin Forensics**
+
+- Subfolder is created with user&#39;s SID
+- Filename in both ASCII and UNICODE
+  - $Recycle.bin - Vista/7-10
+  - Deleted time and original filename contained in separate files for each deleted recovery file
+- Files preceded by $I###### contain
+  - Original path and name
+    - Recycled date/time
+  - Files preceded by $R###### contain
+    - Recovery Data
+- Tool
+  - RBCmd.exe
+
+
+
+**Windows 10 Timeline Forensics**
+
+- _ActivitiesCache.db_
+  - SQLite Database Containing 30+ Days of User Activity
+  - Application Execution
+    - Start Time, End Time, Duration
+    - Full Path
+  - File Opening
+  - URLs Visited
+  - Time Zones
+  - User removed items persist in the database
+
+- Loc_ation_
+  - _C:\Users\\&lt;profile\&gt;\AppData\Local\ConnectedDevicesPlatform\\&lt;\*\&gt;_
+    - \&lt;\*\&gt; = L. \&lt;usersname\&gt; | Microsoft Account ID | Azure Account ID
+
+- Microsoft Cloud Accounts can be cross-referenced to account names (email address) via the following registry key
+  - _NTUSER.DAT\Software\Microsoft\IdentityCRL\UserExtendedProperties_
+
+- Tables
+  - Activity
+    - Maintains approx. 7 days of user activity
+    - Storage for most recent activity items
+    - Relevant Data
+      - Application
+      - Files Opened/URLs
+      - Activity Type
+      - Activity Duration
+      - Timezone
+      - User-removed items
+      - Device Id
+      - Synced Clipboard (base64)
+
+- Activity\_PackageID
+  - Comprehensive view of application execution
+  - Linked to other tables via Activity ID field
+  - Relevant Data:
+    - Application
+    - Application Type
+    - Application Path
+    - Expiration Time
+
+- ActivityOperation
+  - Archive &amp; Staging of cloud synchronization
+  - Items move here from Activity Table
+  - Relevant Data:
+    - Application
+    - Files Opened/URLs
+    - Activity Type
+    - Activity Duration
+    - Timezone
+    - User-removed items
+    - Device Id
+    - Synced Clipboard
+
+- Win 10 Timeline Synchronization
+  - Requires User Opt-In
+  - Activities Sync to each device
+    - Devices tracked via PlatformDeviceId
+    - Supports iOS and Android devices
+  - ActivitiesCache.db also stores synched &quot;Cloud Clipboard&quot; data (base64)
+  - Activ_ities present in the database can be easily tied to each device via_
+    - _NTUSER.DAT/Software/Microsoft/Windows/CurrentVersion/TaskFlow/DeviceCache_
+
+- How to Investigate ActvitiesCache,db
+  - Audit applications installed and executed by the user
+    - Review application names and full path information in Actvity\_PackageID
+  - Review files and URIs opened by each application
+    - Search for &quot;http&quot;, file extensions (.pdf, .docx,\&gt; folder names, and keywords
+  - Look at all activity around a specific time period
+    - Filter table output by date
+  - Identify where the user spent the most time
+    - &quot;Duration&quot; information located in payload of ActivitiesOperations table
+  - Geolocate via time zone information
+    - Located in Payload of ActivityOperations table
+  - Identify items removed by the user
+    - ActivityStatus = 3 in Activity table OperationType = 3 in ActivityOperations table
+  - Review device information to identify other synced devices
+    - Is there relevant data tied to more that one PlatformDeviceId in Activity or ActivityOperations?
+- Tool
+  - WxTCmd.exe
+
+**System Resource Usage Monitor (SRUM)**
+
+- Processes Run
+  - AppID and Path
+  - User Executing App
+  - App Energy Usage
+  - Bytes Sent
+  - Bytes Received
+  - Disk Read/Writes
+- App Push Notification
+  - AppID
+  - User
+  - Payload Size
+- Network Activity
+  - Network Interface
+  - Network Name
+  - Bytes Sent
+  - Bytes Received
+  - Connection Time &amp; Duration
+- Energy Usage
+  - Charge Capacity
+  - Charge Level
+  - Time
+  - Time on AC/DC Power
+- 30 - 60 days of historical system performance
+- Location
+  - Software\Microsoft\Windows NT\CurrentVersion\SRUM\Extensions
+    - Windows Network Data Usage Monitor
+    - Application Resource Usage Provider
+    - Windows Connectivity Usage Monitor
+  - C:\Windows\System32\SRU
+- Examine with System Networks with ESEDatabaseView
+  - L2ProfileId - Network Identifier
+  - SOFTWARE\Microsoft\WlanSvc\Interfaces\{GUID}\Profiles
+    - Metadata
+      - Channel Hints
+- Tool
+  - SRUM\_DUMP
+
+**Event Log Overview**
+
+- What happened
+  - EventID
+  - Event Category
+  - Description
+- Date/Time
+  - Timestamp
+- Users Involved
+  - User Account
+  - Description
+- Systems Involved
+  - Hostname
+  - IP Address
+- Resources Accessed
+  - File
+  - Folders
+  - Printers
+  - Services
+
+**Event Log Location**
+
+- .evtx
+- %systemroot%\System32\winevt\logs
+
+**Event Log Types**
+
+- Security
+  - Records access control and security settings information
+  - Events based on audit and group policies
+  - Example: Failed logon; folder access
+- System
+  - Contains event related to Windows services, system components, drivers, resources, etc.
+  - Example: Service stopped; system rebooted
+- Application
+  - Software events unrelated to operating system
+  - Example: SQL server fails to access a database
+- Custom
+  - Custom application logs
+  - Examples: Server logs, including Directory Services, DNS Server, and File Replication Service
+- Setup
+  - Records installation and update information for Windows
+- Forwarded Events
+  - Repository for events retrieved from other systems
+- Applications and Services
+  - Contains over 60 logs
+  - Useful logs include Task Scheduler, Remote Desktop, Windows Firewall, and Windows Defender
+- Sort Folder by Size
+
+**Security Log**
+
+- Account Logon
+  - Events stored on system who authorized logon (that is, domain controller or local system for non-domain accounts(
+- Account Mgmt (Default)
+  - Account maintenance and modifications
+- Directory Service
+  - Attempted access of Active Directory objects
+- Logon Events (Default)
+  - Each instance of logon/logoff on local system
+- Object Access
+  - Access to objects identified in system access control list
+- Policy Change (Default)
+  - Change of user rights, audit policies, or trust policies
+- Privilege Use
+  - Each case of an account exercising a user right
+- Process Tracking
+  - Process start, exit, handles, object access, etc.
+- System Events
+  - System start and shutdown; actions affecting security log
+
+**Profiling Account Usage**
+
+- Scenario
+  - Determine which accounts have been used for attempted logons
+  - Track account usage for known compromised accounts
+- Relevant Event IDs
+  - 4624 - Successful Logon
+  - 4625 - Failed Logon
+  - 4634 / 4647 - Successful Logoff
+  - 4672 - Account Logon with Superuser rights (Administrator)
+- Investigative Notes
+  - Event descriptions provide a granular view of logon information
+  - Windows does not reliably record logoffs (ID 4634) so also look for ID 4647 -\&gt; User initiated logoff for interactive logons
+  - Logon events not recorded when backdoors, exploited services, or similar malicious means are used to access a system
+  - Note: Logon Type, Account, Timestamp, EventID, Computer
+- Logon Types
+  - 2 - Logon via console (keyboard, server KVM, or virtual client)
+  - 3 - Network Logon
+  - 4 - Batch logon; often used by scheduled tasks
+  - 5 - Windows service logon
+  - 7 - Credentials used to lock or unlock screen; RDP session reconnect
+  - 8 - Network logon sending credentials in cleartext
+  - 9 - Different credentials used than logged on user - RunAs /netonly
+  - 10 - Remote interactive logon (Remote Desktop Protocol)
+  - 11 - Cached credentials use to logon - system likely offline from DC
+  - 12 - Cached Remote Interactive (Similar to Type 10)
+  - 13 - Cached unlock (similar to Type 7)
+- Identifying Logon Sessions
+  - User the LogonID value to link a logon with a logoff and determine session length
+- Tracking a Brute Force
+  - Note Logon Type, Account Name, Workstation Name, Source Network Address, EventID
+- Tracking Remote Desktop Protocol
+  - Scenario
+    - Track Remote Desktop Protocol logon to target machines
+  - Relevant EventIDs
+    - 4778 - Session Reconnected
+    - 4779 - Session Disconnected
+  - Investigative Notes
+    - Records hostname and IP address of remote machine making the connection (sent via RDP client application)
+    - Not a reliable indicator of all RDP activity - intended to record &quot;reconnects&quot;
+      - Valuable to fill in gaps since RDP reconnects are often Type 7 lgons
+    - Also used to track &quot;Fast User Switching&quot; sessions
+    - The auxiliary logs RemoteDesktopServices-RDPCoreTS and TerminalServices-RdpClient record complementary info
+  - EventID 4624 - Logon
+    - Logon Type: 10
+    - Account Name: \*
+    - Source Network Address: \*
+  - EventID 4778
+    - Account Name: \*
+ Account Domain: \*
+    - Logon ID: \*
+    - Session Name: \*
+ Client Name: \*
+    - Client Address: \*
+
+**Analyzing Files and Folder Access**
+
+- Scenario
+  - Identify which users have attempted to access a protected file, folder, registry key, or other audited resource
+- Relevant EventIDs
+  - 4656 - Handle to object requested
+  - 4660 - Object deleted
+  - 4663 - Access attempt on object (read, write, delete. …)
+- Investigative Notes
+  - Event Includes timestamp, file or folder name, and user account that attempted access
+  - Filter by 4656 Failure Events to identify users attempting unauthorized access
+  - Review 4663 events to identify what user actions occurred
+  - Object auditing can quickly fill logs and requires tuning
+- Audit Success
+  - Account Name:
+  - Object Name:
+  - Process Name:
+  - Accesses:
+  - Event ID:
+- Audit Failure
+  - Account Name
+  - Object Name
+  - Access Reasons
+  - Event ID
+- Microsoft Office Oalerts
+  - Scenario
+    - Identify file interaction and alerts generated by Microsoft Excel, Word, Outlook, PowerPoint, Access, OneNote, and Publisher
+  - Relevant Event IDs
+    - 300 - Office Alert
+  - Investigative Notes
+    - Microsoft dialog alerts are recorded as events in Oalerts.evtx
+    - File access, modification, and deletes may be recorded Unauthorized access/permissions issues trigger events
+    - Outlook activity is particularly valuable, as little other logging exists
+    - Oalerts is not a comprehensive source of all Office activity
+
+
+
+**Time Manipulation**
+
+- Scenario
+  - Find evidence of time changes accomplished by user accounts
+- Relevant Event IDs
+  - 1 - Kernel-General (System Log)
+  - 4616 - System time was changed (Security log)
+- Investigative Notes
+  - New in Win8: System log events include user account information (previously only available in the Security log)
+  - Security State Change Auditing must be enabled to log time changes into the Security log
+
+**Geolocation Information**
+
+- Scenario
+  - Determine what wireless networks the system associated with and identify network characteristics to find location
+- Relevant Event IDs
+  - 11000 - Wireless network association started
+  - 8001 - Successful connection to wireless network
+  - 8002 - Failed connection to wireless network
+  - 8003 - Disconnect from wireless network
+  - 6100 - Network diagnostics (System log)
+- Investigative Notes
+  - New custom log introduced with Vista and Server 2008: Microsoft-Windows-WLAN-AutoConfig Operational.evtx
+  - Contains SSID and BSSID (MAC Address), which can be used to geolocate wireless access point \*(no BSSID on Win8+)
+  - Shows historical record of wireless network connections
+- 8001
+  - SSID
+  - BSSID
+  - Authentication
+  - Logged
+  - Pair 8001 and 8003 events to find session length
+- Source: Diagnostics-Networking
+  - System Log
+  - Visible networks
+    - Date/Time
+    - Interface Adapter
+    - SSID
+    - BSSID
+    - Signal Strength
+    - RARE!
+
+**Event Log Summary**
+
+- Logons
+  - Location: Security
+  - Event IDs: 4624, 4625, 4634, 4674, 4672, 4800, 48014, 4, 4625, 4634
+- RDP
+  - Location: Security | RemoteDesktopServices-RDPCoreTS | TerminalServices-RDPClient
+  - Event IDs: 4778, 4779 | 131 | 1024, 1102
+- Object Access
+  - Location: Security | Oalerts
+  - Event IDs: 4656, 4660, 4663 | 300
+- Time Change
+  - Location: System | Security
+  - Event IDs: 1 | 4616
+- Ext. Devices
+  - Location: System | Security
+  - Event IDs: 20001 | 4656, 4663, 6416
+- Wireless
+  - Location: WLAN-AutoConfig | System
+  - Event IDs: 8001, 8002, 11000 | 6100
+
+Tools
+
+- Event Log Explorer
+- Evtx Explorer
+
+Ref: [https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/+](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/+)
+
+Ref: [https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings](https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings)
