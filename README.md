@@ -1845,3 +1845,674 @@ Tools
 Ref: [https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/+](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/+)
 
 Ref: [https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings](https://docs.microsoft.com/en-us/windows/security/threat-protection/auditing/advanced-security-audit-policy-settings)
+
+# Web Browsers
+
+**Overview**
+
+- What websites did the user visit?
+  - History
+  - Cache
+  - Cookies
+  - Session Recovery
+  - Typed URLs
+  - Prefs
+- How many time was the site visited?
+  - History
+- When was a site visited?
+  - History
+  - Cookies
+  - Cache
+  - Session Recovery
+- What websites were saved by the user?
+  - Bookmarks
+- Were any files downloaded?
+  - Download History
+  - Cache
+  - Prefs
+- Cane we identify any usernames?
+  - History
+  - Cookies
+  - Cache
+  - Auto Complete
+  - Session Recovery
+  - Prefs
+- What was the user searching for?
+  - Auto-Complete
+  - Cache
+
+**Browser Languages**
+
+- JavaScript
+- CSS
+- HTML5
+
+**Chrome**
+
+- Artifact Locations:
+  - %USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default
+    - SQLite
+    - JSON
+    - SNSS (Session Saver files)
+- History
+  - Records websites visited by data and time
+    - Details stored for each local user account
+    - URL
+    - Page Title
+    - Referrer Page
+    - Visit Count (Frequency)
+  - History SQLite Database
+  - 90 Days
+- History Database Tables
+  - Downloads: Download Manager
+  - Downloads\_url\_chains: Download Manager
+  - Keyword\_search\_terms: Typed Search Terms
+  - Segments &amp; Segments usage: Frequently used sites
+  - URL, visits: URLs visited (History)
+  - Visit\_source: Synchronized data
+- URL/Visit table
+  - What was the complete URL that was visted? - url
+  - What was the title of the page visited? - title
+  - What times was the site last visited? - visit\_Time (cross reference using id from url table)
+  - When was the site last visited? - last\_visit\_time
+  - How many visits were made to the site? - visit\_count
+  - Was the URL typed by the user? - typed\_count
+  - What page led the user to this one? - From\_visit
+  - How long was the page viewed? - visit\_duration
+  - How did the user request the page? - transition
+- Transition Types
+  - 0 - Type: User clicked a link
+  - 1 - Typed: URL typed in address bar (same as IE typed URLs)
+  - 2 - Auto\_Bookmark: Via a suggestion in the Chrome UI (NOT a user favorite)
+  - 3 - Auto\_Subframe: Content loaded in a non-top-level frame (advertisement)
+  - 4 - Manual\_Subframe: User request to load content in non-top-level frame
+  - 5 - Omniibox Generated: Suggested based on user typing but user did NOT see URL
+  - 6 - Start\_Page: Home page of a tab
+  - 7 - Form\_Submit: User filled out information in a form and submitted
+  - 8 - Reload: Page refreshed
+  - 9 - Keyword: Keyword typed to identify site (for example, &quot;Wired&quot; \&lt;TAB\&gt;)
+  - 10 - Keyword Generated: The actual URL generated (and visited) as a result of keyword
+  - Ref: [https://kb.digital-detective.net/display/BF/Page+Transitions](https://kb.digital-detective.net/display/BF/Page+Transitions)
+- Cache
+  - %AppData%\Local\Google\Chrome\User Data\Default\Cache
+  - Index - hash table of stored URLs
+  - Data\_# - block storage for small files \&lt; 16 KB
+  - F\_###### - individual cached files \&gt; KB
+  - Tool: ChromeCacheView
+- Cache Timestamps
+  - Last Accessed - The last time cached content was used (UTC)
+  - Server Time - The time file was stored locally (First known visit); creation time of cached file (UTC)
+  - Server Last Modified - The last time content was changed on the web server; Set by the website and stored in UTC
+  - Expire Time - Used by the cache to age out old versions of pages; Set by the website and stored in UTC
+- Cookies
+  - SQLite Format
+  - Encrypted with DPAPI
+  - Decryption possible on live system with user logged in
+  - Contents of cookies rarely used in invesitigation
+- Cookie Questions
+  - What website domain/page issued the cookie? - host\_key / path
+  - What is the cookie name? - name
+  - What values/preferences were stored - value/encrypted\_value
+  - When was the cookie created? - creation\_utc
+  - When was the cookie/site last accessed? - last\_access\_utc
+- HTML5 Web Storage
+  - Preferences, keywords, visit tracking, usernames, offline files, not expiration and cleared along with cookies
+  - Chrome: LevelDB in Local Storage folder (prev. SQLite)
+    - _%USERPROFILE%\AppData\Local\Google\Chrome\User Data\Default\Local Storage_
+  - Firefox: Located in webappstore.sqlite database
+  - IE/EdgeHTML: .XML file sin the DOMStore folder
+    - _%USERPROFILE%\AppData\Local\Microsoft\Internet Explorer\DOMStore_
+    - _%UserPROFILE%\AppData\Local\Packages\microsoft.microsoftedge\_\&lt;APPID\&gt;\AC\#!001\MicrosoftEdge\User\Default\DOMStore_
+- Chrome HTML5 File System
+  - %AppData%\Local\Google\Chrome\User Data\Default\File System
+  - Where sites can store files
+- Preferences
+  - JSON file containing configuration data
+  - Located in Chrome profile folder (\Default)
+  - Note
+    - Clear\_data - previously cleared artifacts
+    - Savefile - last saved location
+    - Selectfile - last opened from location
+    - Content\_settings
+      - Per\_host\_zoom\_levels - sites that have been zoomed by user
+      - Geolocation - sites that have been allowed to geolocate the browser
+      - Media\_engagement - significant media play (at least 7 seconds and have an non-muted audio track
+      - Site\_engagement - tracks legitimate user engagement with the site
+      - Sound - sites that have been permanently muted by the user
+    - Synchronization Data
+      - Account\_info - google account last used to sign-in
+      - Signin - authentication info related to google account
+      - Last\_synced\_time - last synced to cloud
+      - Zerosuggest - catalogs recent search terms (base64)
+- Auto-Complete
+  - History
+    - Visited sites
+    - Search engine typing (keyword\_search\_terms)
+  - Web Data
+    - Items typed into web forms
+    - Note: autofill table
+  - Shortcuts
+    - What was typed into &quot;Omnibox&quot;
+    - Note: Omni\_box\_shortcuts table
+  - Network Action Predictor
+    - Items prefetched and triggered by typing
+    - Note: network\_action\_predictor table
+  - Login Data
+    - Saved credentials
+    - URL and username also recorded when user opts out
+- Session Recovery
+  - Uses SNSS (session saver) format
+    - Version \&lt; 86
+      - Current Session and Current Tabs
+      - Last Session and Last Tabs
+    - Version 86+
+      - Sessions folder
+      - Session\_\&lt;timestamp\&gt;
+      - Tabs\_\&lt;timestamp\&gt;
+  - Tools
+    - Browser History Examiner
+    - Axiom
+    - X-Ways
+    - Chromagnon
+      - Chromagnon.py &quot;Last Session&quot;
+    - Strings
+      - Strings.exe &quot;Last Session&quot;
+- Synchronization
+  - Visit\_source table identifies synced history entries via the source field
+    - 0 - Synced
+    - 1 - User Browsed
+    - 2 - Extension
+    - 3 - Firefox Import
+    - 4 - IE Import
+    - 5 - Safari Import
+    - 6 - Chrome (Edge)
+    - 7 - EdgeHTML
+  - Match &quot;id&quot; to visits table
+- Master Tool
+  - Hindsight
+
+**Chrome/Edge Analysis Cookbook**
+
+1. Determine Sites Visited
+
+  1. Review Current History Data
+
+    1. Search Keywords
+    2. Review Transition info for Typed URLs
+    3. Document Top Sites
+  1. Audit Preferences file for visited and synchronization info
+  2. Search Current and Last Session Files
+  3. Audit Bookmarks and (Collections - Edge Only)
+  4. Look for other profiles
+1. Fill in Evidence Gaps
+
+  1. Review Cache file domains
+
+    1. Analyze specific file types of interest
+  1. Review Cookie domains
+  2. Search HTML5 data in Local Storage folder
+  3. Parse Download History
+  4. Analyze Web Data, Shortcuts, and Network Predictor entries
+  5. Audit chrome browser extensions
+1. Deep Dive Analysis
+
+  1. Review memory-based artifacts
+
+    1. Incognito artifacts
+  1. Carve deleted SQLite entries
+  2. Review Sync Data database
+  3. Audit Chrome Jumplist entries
+  4. Target analysis using Volume Shadow Copies
+
+**Edge**
+
+- _%AppData%\Local\Microsoft\Edge\User Data\Default_
+  - Internet History
+    - History, Top Sites
+  - Cache Files
+    - Data\_#, f\_######
+  - Cookies/Web Storage
+    - Cookies/Local Storage Folder
+  - Bookmarks
+    - Bookmarks, Bookmarks.bak
+  - Download History
+    - History
+  - Auto Complete\Form Data
+    - History, Web Data, Login, Data, Network Action Predictor
+  - Installed Extensions
+    - Extensions Folder
+  - Session Recovery
+    - Current Session, Current Tabs, Last Session, Last Tabs
+  - Synchronization
+    - Sync Data
+- Chrome/Edge: Examining Downloads (History - Table: Downloads)
+  - What was the filename?
+    - Target\_path
+  - Where was the file downloaded from?
+    - Tab\_referrer\_url, tab\_url +(referrer &amp; download\_url\_chains)
+  - Where was the file saved?
+    - Target\_path
+  - When did the download start/end?
+    - Start\_time, end\_time
+  - How large was the download?
+    - Total\_bytes
+  - Was the download successful?
+    - State, interrupt\_reason
+  - Was the file opened (via download mgr)?
+    - Opened, last\_access\_time
+  - Did the Chrome flag the content of the file?
+    - Danger\_type
+- Chrome/Edge Download: Additional Metadata
+  - State
+    - 0 - In Progress
+    - 1 - Complete
+    - 2 - Cancelled
+    - 3 - Interrupted
+    - 4 - Blocked
+  - Interrupt\_reason (selected)
+    - 0 - None
+    - 1 - File (generic)
+    - 2 - Access Denied
+    - 3 - No Space
+    - 5 - Filename too long
+    - 6 - File too large
+    - 7 - Virus Infected
+    - 12 - Failed Security
+    - 20 - Network Error
+    - 40 - User Cancelled
+    - 41 - User Shutdown
+    - 50 - Browser Crash
+  - Danger\_type
+    - 0 - Not Dangerous
+    - 1 - Dangerous URL
+    - 3 - Dangerous Content
+    - 4 - Maybe Dangerous
+    - 5 - Uncommon Content
+    - 6 - User Validated
+    - 7 - Dangerous Host
+    - 8 - Potentially Unwanted
+    - 11 - Password Protected
+    - 13/14 - Sensitive Content
+- Chrome/Edge Extensions
+  - Manifest.json (in each extension folder)
+- Bookmarks
+  - Bookmarks, Bookmarks.bak
+- Edge Collections
+  - %AppData%\Local\Microsoft\Edge\User Data\Default\Collections\collectionsSQLite
+    - Collections\_items\_relationship
+      - Item\_id, parent\_id
+    - Collections
+      - Parent\_id -\&gt; id
+    - Items
+      - Item\_id -\&gt; id
+- Edge Privacy Settings
+  - Found in &#39;preferences&#39; table
+  - Data deletion options
+- Chrome/Edge Profiles
+  - _%AppData%\Local\Microsoft\Edge\User Data\_
+  - Each profile maintains a complete set of databases
+  - Profiles can be tied to a name or email (found in &#39;preferences&#39; file)
+- Edge Synchronization
+  - &#39;preferences&#39; table
+  - Syncs
+    - Web Data (Form Data)
+    - Bookmarks
+    - Extensions
+    - Login Data (Passwords Encrypted)
+    - Collections
+
+**Internet Explorer**
+
+- IE 11
+  - Metadata - Cache, History, Download History, Cookies
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV\*.dat
+  - Storage - Cache, Cookies
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\INetCache\IE
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\INetCookies\Low
+- IE 10
+  - Metadata - Cache, History, Download History, Cookies
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\WebCache\WebCacheV\*.dat
+  - Storage - Cache, Cookies
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Low\Content.IE5
+    - %USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies
+    - %USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies\Low
+- IE 8 &amp; IE 9
+  - Metadata stored in Index.dat files
+  - History
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\History\History.IE5
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\History\Low\History.IE5
+  - Cache
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Content.IE5
+    - %USERPROFILE%\AppData\Local\Microsoft\Windows\Temporary Internet Files\Low\Content.IE5
+  - Cookies
+    - %USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies
+    - %USERPROFILE%\AppData\Roaming\Microsoft\Windows\Cookies\Low
+  - Download History
+    - %USERPROFILE%\AppData\Roaming\Microsoft\Windows\IEDownloadHistory
+- WebcacheV\*.dat
+  - Table: Containers
+    - ContainerID - Identifier for each table assigned to an IE artifact
+    - LastAccessTime - Last update time for table
+    - Name - Type of table (&quot;History&quot; == IE History)
+    - Directory - Location of artifacts in the filesystem
+  - History table
+    - AccessedTime - Access time of object referenced in URL field
+    - AccessCount - Number of times URL visited - \*\*Not Reliable\*\*
+    - Url - Resource being accessed (website, file, or other object)
+  - Download History
+    - Iedownload table
+    - Response Headers field contains a wealth of information about each download in hex Unicode format
+    - Filename
+    - File Size
+    - Originating URL
+    - Referring URL
+    - Download Destination
+    - Time of Download (Accessed Time)
+  - Local Files Access (History table)
+    - [file:///C:/\&lt;filename\&gt;](/C:%5C%3Cfilename%3E)
+  - Other browser history can make its way into the IE history tables
+    - &quot;@microsoft-edge:&quot;
+  - Cache
+    - Filename/FileSize - Name and size (in bytes) of cached file on disk
+    - SecureDirectory - Location of file within cache subdirectories
+    - AccessCount - Number of uses of cached content
+    - URL - Origin of cached content
+  - Cookies
+    - Filename - Cookie filename on disk
+    - URL - Issuing domain of cookies
+    - AccessCount - How many times cookies has been passed to site
+    - CreationTime - First time cookie saved to system (UTC)
+    - ModifiedTime - Last time website modified cookie (UTC)
+    - AccessedTime - Last time cookie was passed to website (UTC)
+    - ExpiryTime - When cookie will no longer be accepted (UTC)
+  - Universal Apps
+    - Twitter App, etc
+    - %USERPROFILE%\AppData\Local\Packages
+  - Look for transaction logs
+    - Read headers: esentutl /mh WebCacheV01.dat
+    - Recover dirty db: esentutl /r V01 /d
+  - Auto-Complete
+    - Typed URLs
+      - NTUSER\Software\Microsoft\InternetExplorer\TypedURLs (IE 9)
+      - NTUSER\Software\Microsoft\InternetExplorer\TypedURLsTime (IE 10+)
+    - Credential Manager/Windows Vault
+      - DPAPI Encrypted
+      - Website Usernames and Passwords
+      - Network, Exchange Server, RDP, and FTP passwords
+      - Stored as a single .vcrd file
+      - %USERPROFILE%\AppData\Local\Microsoft\Vault\{GUID}
+      - %USERPROFILE%\AppData\Roaming\Microsoft\Vault\{GUID}
+      - \Windows\System32\config\systemprofile\AppData\Local\Vault\{GUID}
+      - \Windows\System32\config\systemprofile\AppData\Roaming\Vault\{GUID}
+      - Tool: WebBrowserPassView (can decrypt on live machines)
+  - Session Recovery
+    - Creation time of .dat files in Active folder = session start
+    - Creation time of .dat files in LastActive folder = session end
+    - Structure Storage Format
+      - Tool: Structure Storage Viewer
+      - Tool: ParseRS
+    - Windows 7/8/10
+      - %USERPROFILE%/AppData/Local/Microsoft/Internet Explorer/Recovery/Active (Current Session)
+      - %USERPROFILE%/AppData/Local/Microsoft/Internet Explorer/Recovery/Last Active (Last Session)
+      - %USERPROFILE%/AppData/Local/Microsoft/Internet Explorer/Recovery/Immersive/Active (Current Session - Modern IE)
+      - %USERPROFILE%/AppData/Local/Microsoft/Internet Explorer/Recovery/Immersive/Last Active (Last Session - Modern IE)
+      - %USERPROFILE%/AppData/Local/Microsoft/Internet Explorer/Recovery/High/Active (Current Session - High Integrity)
+      - %USERPROFILE%/AppData/Local/Microsoft/Internet Explorer/Recovery/High/Active (Last Session - High Integrity)
+    - Windows XP (IE8 Only)
+      - %USERPROFILE%/Local Settings/Application Data/Microsoft/Internet Explorer/Recovery/Active (Current Session)
+      - %USERPROFILE%/Local Settings/Application Data/Microsoft/Internet Explorer/Recovery/Last Active (Last Session)
+  - Synchronization
+    - Determine if enabled
+      - SOFTWARE\Microsoft\Windows\CurrentVersion\SettingsSync\BrowserSettings\\&lt;Browser Name\&gt;
+    - If turned off the following key is created
+      - NTUSER\ControlPanel\Usage\SystemSettings\_SyncSettings\_SyncBrowsingSettings\_Toggle
+    - Synced
+      - History
+      - Typed URLs
+      - Bookmarks
+      - Tabs
+      - Preferences
+      - Passwords
+    - Survives Clear
+      - Local
+        - All WebCache entries removed
+        - Tab roaming folders cleared
+      - Remote
+        - Tab roaming folders cleared
+      - All WebCache data persists
+    - Key Artifact: TabRoaming Sessions
+      - %AppData%\Local\Microsoft\InternetExplorer\TabRoaming
+    - Tabs - Parse MachineInfo.dat and Tab .dat files
+    - History - Compare SyncTime and AccesTime for entry in WebCacheV\*.dat. If times differ by more than +/- 5 seconds, it likely originated from a different system. If ExpiryTime = 0, a history entry was recorded in WebCacheV\*.dat due to a sync operation
+  - Overview
+    - Internet History - WebcacheV\*.dat, Session Recovery {GUID}.dat
+    - Cache Files - WebcacheV\*.dat
+    - Cookies/WebStorage - WebCacheV\*.dat / DOMStore
+    - Bookmarks - .url files
+    - Download History - WebCacheV\*.dat
+    - TypedURLs - Registry
+    - Web Passwords - .vcrd files
+    - Synchronization - WebCacheV\*.dat &amp; TabRoaming {GUID}.dat
+
+**IE/EdgeHTML Analysis Cookbook**
+
+1. Determine Sites Visited
+
+  1. Review Current History Data
+
+    1. Search Keywords
+    2. Validate that your tool reviews all History tables in ESE database
+    3. Analyze Session Recovery files
+    4. Check for evidence of synchronization
+  1. Review TypedURLs key
+  2. Audit Bookmarks
+1. Fill in Evidence Gaps
+
+  1. Review Cache file domains
+
+    1. Analyze specific file types of interest
+  1. Review Cookie domains
+  2. Search HTML5 DOMstore
+  3. Parse Download History
+  4. Review Relevant Modern UI artifacts
+  5. Check for Roaming Tab files
+1. Deep Dive Analysis
+
+  1. Review memory-based artifacts
+
+    1. InPrivate Browsing Artifacts
+  1. Recover dirty ESE database entries
+  2. Carve deleted ESE entries
+  3. Review IT/EdgeHTML Jumplist entries
+  4. Check LNK files for website data
+  5. Target analysis using Volume Shadow Copies
+1. Tools - IECacheView, IECookiesView, IEHistoryView
+
+**Firefox**
+
+- File Locations
+  - History, Cookies, Bookmarks, Auto-Complete
+    - %USERPROFILE%\AppData\Roaming\Mozilla\Firefox\Profiles\\&lt;random text\&gt;.default
+  - Cache
+    - %USERPROFILE%\AppData\Local\Mozilla\Firefox\Profiles\\&lt;random text\&gt;.default\Cache
+- Majority SQLite DB with some JSON
+- Important DB files
+  - Places.sqlite - History, Bookmarks, Auto-Complete, Downloads
+  - Formhistory.sqlite - Auto-complete form data
+  - Cookies.sqlite - Cookies
+  - Webappsstore.sqllite - HTML5 Web Storage
+  - Extensions.sqlite - Firefox
+- Places.sqlite
+  - What was the complete URL that was visited? - url
+  - What was the title of the page visited? - title
+  - When was the site first visited? - visit\_date\*
+  - When was the site last visited - visit\_date\*
+  - How many visits were made to the site? - visit\_count
+  - Was the URL typed by the user? - typed
+  - Was the page retrieved without any user actions? - hidden
+  - What page led the user to this one? - from\_visit
+  - How did the user request the page? - visit\_type
+- Visit\_type
+  - 1 - User followed a link and the page was loaded
+  - 2 - User typed the URL to get to the page (with or without auto-complete)
+  - 3 - User followed a bookmark to get to the page
+  - 4 - Indicates some inner content was loaded, such as images and iframes
+  - 5 - Page accessed due to a permanent redirect (HTTP 301 status code)
+  - 6 - Page accessed due to temporary redirect (HTTP 302 status code)
+  - 7 - File indicated by history was downloaded (non-HTML content)
+  - 8 - User followed a link that loaded a page in a frame
+- Cache
+  - %USERPROFILE%\AppData\Local\Mozilla\Firefox\Profiles\\&lt;random text\&gt;.default\Cache - \&lt;= Version 32
+  - %USERPROFILE%\AppData\Local\Mozilla\Firefox\Profiles\\&lt;random text\&gt;.default\cache2 - \&gt;= Version 32
+  - URL
+  - Num Times Fetched
+  - Is the File Present?
+  - Filename
+  - File Type
+  - File Size
+  - Last Modified Time
+  - Last Fetched Time
+  - Response Header
+- Cookies
+  - Cookies.sqlite
+    - What website domain issued the cookie? - host
+    - What is the cookie name? - name
+    - Was the cookie issued in a secure connection? - isSecure
+    - What values/preferences were stored? - value
+    - When was the cookie created? - creationTime
+    - When was the cookie/site last accessed? - lastAccessed
+- Download History
+  - Places.sqlite - table: moz\_annos
+    - What was the filename? - place\_id (ref. moz\_places)
+    - Where was the file downloaded from? - place\_id (ref. moz\_places)
+    - Where was the file saved? - Anno\_attribute\_id 4
+    - When did the download end? - Anno\_attribute\_id 5 (endTime)
+    - How large was the download? - anno\_attribute\_id 5 (fileSize)
+    - Was the download successful? - anno\_attribute\_id 5 (state)
+  - Firefox 26+ places.sqlite
+  - Firefox 3-25: downloads.sqlite
+  - Changes to default download directory are recorded in prefs.js
+- Auto-Complete
+  - Formhistory.sqlite
+    - What type of form was the data entered into? - filename
+    - What was the data typed by the user? - value
+    - How many times has value been used? - timesUsed
+    - When was the data first typed in? - firstUsed
+    - When was the last time the data was used? - lastUsed
+  - Use Dcode to decode times (UNIX epoch time)
+- Session Restore
+  - Sessionstore.jsonlz4
+    - Javascript format (compressed)
+    - Deleted when browser is closed
+  - Sessionstore-backups
+    - Contains older sessions
+    - Deleted when browser history is cleared
+- Extensions
+  - Extensions.json
+    - What extensions were installed? - name
+    - What version of extension? - version
+    - Extension information page? - SourceURI
+    - When was the extension installed? installDate
+    - When was the extension last updated? updateDate
+    - Was the extension enabled? - active
+- Synchronization
+  - Synced
+    - History
+    - Bookmarks
+    - Preferences
+    - Form History
+    - Extensions
+    - Passwords (encrypted)
+    - Tabs
+    - Cookies (not all)
+    - Downloads (visit\_type = 7)
+  - Indications of synced data
+    - Visit\_type =1 and no from\_visit ID
+    - No data present in description and preview\_image\_url fields
+    - No entries in favicons.sqlite
+    - No entries in webappstore.sqlite
+    - No cached files from site
+    - Small number of cookies associated with domain
+    - Visit\_type = 7 and no moz\_annos
+  - Synced Data Persistent after clear
+    - Local System
+      - Places.sqlite cleared
+        - Download History Cleared
+      - Formhistory.sqlite cleared
+      - Cookies.sqlite cleared
+      - Cache2 entries deleted
+      - Sessionstore-backups folder deleted
+    - Remote System
+      - All existing data and synced data persist
+      - Interestingly, &quot;Delete Page&quot; and &quot;Forget About This Site&quot; options remove entries on both local and remote systems
+
+**Firefox Analysis Cookbook**
+
+1. Determine Sites Visited
+
+  1. Review Current History Data
+
+    1. Search Keywords
+    2. Review VisitType for TypedURLs
+    3. Analyze privacy settings
+    4. Check for evidence of synchronization
+  1. Analyze Session Restore files
+  2. Audit Bookmarks
+  3. Look for other profiles
+1. Fill in Evidence Gaps
+
+  1. Review Cache file domains
+
+    1. Analyze specific file types of interest
+  1. Review Cookie domains
+  2. Search HTML5
+  3. Webappstore data
+  4. Parse Download History
+  5. Analyze Formhistory
+  6. Audit installed browser extensions
+1. Deep Dive Analysis
+
+  1. Review memory-based artifacts
+
+    1. Private Browsing Artifacts
+  1. Carve deleted SQLite entries
+  2. Review Firefox Jumplist entries
+  3. Target analysis using Volume Shadow Copies
+1. Tools - MZCacheView, FireFoxDownloadsView, BrowserHistoryView, dejsonlz4
+
+
+
+**Private Browsing**
+
+- Internet Explorer/EdgeHTML
+  - History not saved
+  - Cookies are not created
+  - TypedURLs and Form data no saved
+  - Cached files are created but deleted at end of session
+  - Can be disabled using Group Policy or via Registry
+  - Can be recovered via file undeletion
+    - Cache Files
+    - Automatic Crash (Session) Recovery files
+  - Artifacts can be found
+    - Unallocated space/pagefile.sys
+    - Memory
+  - User parseRS on session recovery file
+- Chrome/Edge/Firefox
+  - Artifacts in memory
+  - Downloaded files persist
+  - Bookmarks are maintained
+- Tor Private Browsing
+  - Application Execution
+    - Prefetch: TOR.EXE, START TOR BROWSER.EXE
+    - UserAssist: Start Tor Browser.exe
+    - SRUM: TOR.EXE, START TOR BROWSER.EXE
+  - \Data\Browser folder contains Firefox databases
+  - \Data\Tor folder contains preferences and status files
+    - &quot;State&quot; text file can show TOR version and last execution time
+- Identify selective deletes
+  - Gaps in the database or significant time gaps
+  - Deleted data cane be recovered by carving the unallocated space within the database
+    - Sqlparse.py -f places.sqlite -o places\_out.tsv
+    - ESECarve
+      - -y (deduplicates)
